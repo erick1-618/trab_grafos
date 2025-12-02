@@ -5,14 +5,14 @@ class Graph:
         """
         Initializes a empty graph
         Args:
-            kind: determines the direcionality of the graph. "t" for targeted, "n" for no-targeted, and "m" for mixed
+            kind: determines the direcionality of the graph. "t" for targeted, "n" for no-targeted
         """
         self.kind = kind
         self.vertexes = {}
 
     def add_vertex(self, name=None):
         """
-        Insert a vertex in the graph
+        Inserts a vertex in the graph
         Args:
             name: vertex name
         """
@@ -23,7 +23,7 @@ class Graph:
 
     def add_edge(self, origin, destination, w, name=None):
         """
-        Insert an edge into the graph
+        Inserts an edge into the graph
         Args:
             origin: origin vertex
             destination: destination vertex
@@ -35,9 +35,13 @@ class Graph:
 
         self.vertexes[origin][unique_name] = {'dest': destination,'weight': w}
 
+        # Inserting the reverse edge for non-targeted ones
+        if self.kind == 'n':
+            self.vertexes[destination][f'{unique_name}_R'] = {'dest': origin,'weight': w}
+
     def rem_edge(self, e_name):
         """
-        Remove an edge from the graph
+        Removes an edge from the graph
         Args:
             e_name: name of the edge
         """
@@ -45,6 +49,10 @@ class Graph:
         for v, edges in self.vertexes.items():
             if e_name in edges.keys():
                 del edges[e_name]
+
+                # Deleting the reverse edge for non-targeted ones
+                if self.kind == 'n':
+                    self.rem_edge(f'{e_name}_R')
                 break
 
     def rem_vertex(self, name):
