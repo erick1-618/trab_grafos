@@ -1,53 +1,54 @@
-import time
+from time import time
 from graphs import generate_random_graph
 from mpp import dijkstra, pivot_sssp_graph
 import csv
 
+# Tamanhos dos grafos
+tamanhos = (10, 100, 500)
+
+# Modelos de MPP
+modelos = {
+    'dijkstra': dijkstra,
+    'pivot_sssp': pivot_sssp_graph
+}
+
+# Fator do tipo de grafo
+tipo_grafo = {
+    'esparso': 1,
+    'denso': 0
+}
+
+# Peso máximo das arestas
 max_weight = 20
 
-tamanhos = {
-    "pequeno": 10,
-    "médio": 100,
-    "grande": 500
-}
 with open('benchmark_results.csv', mode='w', newline='') as file:
+
+    # Cria o objeto writer
     writer = csv.writer(file, delimiter=';')
-    writer.writerow(["Tamanho", "Dijkstra Esparso", "Pivot SSSP Esparso", "Dijkstra Denso", "Pivot SSSP Denso"])
+    
+    # Escreve o cabeçalho do csv
+    writer.writerow(["tamanho", "modelo_mpp", "tipo_grafo", "tempo"])
 
-    for i in range(5):
-            resultados_aux = []
+    x = 30
 
-            for tamanho_nome, n_vertexes in tamanhos.items():
+    # Cada combinação de possibilidade de execução será realizada x vezes
+    for _ in range(x):
+        for tamanho in tamanhos:
+            for tipo, fator in tipo_grafo.items():
                 
-                # Grafo esparso: mesmo número de vértices e arestas
-                sparse_graph = generate_random_graph(n_vertexes, n_vertexes, True, max_weight)
-                
-                #sssp
-                start_time = time.time()
-                distances_sparse = pivot_sssp_graph(sparse_graph, list(sparse_graph.vertexes.keys())[0])
-                end_time = time.time()
-                resultados_aux.append(end_time - start_time)
+                # Gera o grafo aleatório
+                grafo = generate_random_graph(tamanho, tamanho * fator, True, 20)
 
-                #Dijkstra normal
-                start_time = time.time()
-                distances_sparse = dijkstra(sparse_graph, list(sparse_graph.vertexes.keys())[0])
-                end_time = time.time()
-                resultados_aux.append(end_time - start_time)
-                
-                # Grafo denso: bem mais arestas que vértices
-                dense_graph = generate_random_graph(n_vertexes, n_vertexes * 10, False, max_weight)
-                #sssp
-                start_time = time.time()
-                distances_dense = pivot_sssp_graph(dense_graph, list(dense_graph.vertexes.keys())[0])
-                end_time = time.time()
-                resultados_aux.append(end_time - start_time)
+                for modelo, func in modelos.items():
 
-                #Dijkstra normal
-                start_time = time.time()
-                distances_dense = dijkstra(dense_graph, list(dense_graph.vertexes.keys())[0])
-                end_time = time.time()
-                resultados_aux.append(end_time - start_time)
+                    # Medição de uma execução
+                    inicio = time()
+                    distancias = func(grafo, list(grafo.vertexes.keys())[0])
+                    fim = time()
 
-                linha_formatada = [tamanho_nome] + [f"{val:.6f}".replace('.', ',') for val in resultados_aux]
-                writer.writerow(linha_formatada)
-                resultados_aux = []
+                    tempo = fim - inicio
+
+                    # Escrita do resultado no csv
+                    writer.writerow([tamanho, modelo, tipo, tempo])
+
+
