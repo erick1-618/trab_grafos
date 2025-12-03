@@ -2,9 +2,9 @@ from graphs import Graph
 from math import inf
 import heapq
 
-def djikstra(graph: Graph, origin):
+def dijkstra(graph: Graph, origin):
     """
-    Function that implements the Djikstra Algorithm for the Minimum Path Problem
+    Function that implements the Dijkstra Algorithm for the Minimum Path Problem
     args:
         graph: the Graph input
         origin: the origin vertex
