@@ -1,0 +1,8 @@
+dir: t
+vertexes: [a, b, c, d, e]
+edges: 
+  - 'a-b-2'
+  - 'b-c-1'
+  - 'd-a-3'
+  - 'e-c-1'
+  - 'e-d-4'

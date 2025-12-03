@@ -109,5 +109,5 @@ def pivot_sssp_graph(G, source, width=10, num_pivots=5, limit=50):
 
         max_dist += width
 
-    # --- 4) Converter de volta para dicionário {vértice: distância} ---
+    # --- 4) Converting to dictionary ---
     return { id_of[i]: dist[i] for i in range(n) }

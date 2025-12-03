@@ -1,4 +1,7 @@
 import uuid
+import random
+import string
+import yaml
 
 class Graph:
     def __init__(self, kind):
@@ -7,6 +10,10 @@ class Graph:
         Args:
             kind: determines the direcionality of the graph. "t" for targeted, "n" for no-targeted
         """
+
+        if kind not in ['t', 'n']:
+            raise ValueError('Kind must be "t" for targeted graphs or "n" for non-targeted')
+        
         self.kind = kind
         self.vertexes = {}
 
@@ -85,3 +92,67 @@ class Graph:
                 vertex_and_edges += f' -> ({edge}) ({info['dest']}) {info['weight']}'
             vertex_and_edges += '\n'
         return vertex_and_edges
+    
+def generate_random_graph(n_v, n_e, is_simple, max_weight):
+    """
+    Creates a random Graph object
+    Args:
+        n_v: number of vertexes
+        n_e: number of edges
+        is_simples: determines if the graph is simple or not
+    """
+
+    g = Graph('t')
+
+    for _ in range(n_v):
+        while True:
+            v_name = f'{random.choice(string.ascii_uppercase)}-{random.choice(range(n_v))}'
+            if v_name not in g.vertexes.keys():
+                break
+        g.add_vertex(v_name)
+
+    for _ in range(n_e):
+        
+        while True:
+
+            vertexes = list(g.vertexes.keys())
+
+            origin = random.choice(vertexes)
+            destination = random.choice(vertexes)
+
+            if is_simple:
+                break
+
+            if origin != destination and destination not in g.vertexes[origin].keys():
+                break
+        
+        weight = random.randint(0, max_weight)
+
+        g.add_edge(origin, destination, weight)
+
+    return g
+
+def import_graph(graph_file):
+    """
+    Reads a yaml file containing informations about the graph and returns the correspondent Graph object
+    Args:
+        graph_file: the graph yaml file
+    """
+
+    with open(graph_file, 'r') as file: 
+        graph_data = yaml.safe_load(file)
+
+    g = Graph(graph_data['dir'])
+
+    vertexes = graph_data['vertexes']
+
+    for v in vertexes:
+        g.add_vertex(v)
+
+    edges = graph_data['edges']
+
+    for e in edges:
+        origin, destination, weight = e.split('-')
+        g.add_edge(origin, destination, int(weight))
+
+    return g
