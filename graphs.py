@@ -1,5 +1,4 @@
 import uuid
-import random
 import string
 import yaml
 
@@ -93,10 +92,11 @@ class Graph:
             vertex_and_edges += '\n'
         return vertex_and_edges
     
-def generate_random_graph(n_v, n_e, is_simple, max_weight):
+def generate_random_graph(rng, n_v, n_e, is_simple, max_weight):
     """
     Creates a random Graph object
     Args:
+        rng: the rng instance for generating the graph
         n_v: number of vertexes
         n_e: number of edges
         is_simples: determines if the graph is simple or not
@@ -106,7 +106,7 @@ def generate_random_graph(n_v, n_e, is_simple, max_weight):
 
     for _ in range(n_v):
         while True:
-            v_name = f'{random.choice(string.ascii_uppercase)}-{random.choice(range(n_v))}'
+            v_name = f'{rng.choice(string.ascii_uppercase)}-{rng.choice(range(n_v))}'
             if v_name not in g.vertexes.keys():
                 break
         g.add_vertex(v_name)
@@ -117,8 +117,8 @@ def generate_random_graph(n_v, n_e, is_simple, max_weight):
 
             vertexes = list(g.vertexes.keys())
 
-            origin = random.choice(vertexes)
-            destination = random.choice(vertexes)
+            origin = rng.choice(vertexes)
+            destination = rng.choice(vertexes)
 
             if is_simple:
                 break
@@ -126,7 +126,7 @@ def generate_random_graph(n_v, n_e, is_simple, max_weight):
             if origin != destination and destination not in g.vertexes[origin].keys():
                 break
         
-        weight = random.randint(0, max_weight)
+        weight = rng.randint(0, max_weight)
 
         g.add_edge(origin, destination, weight)
 

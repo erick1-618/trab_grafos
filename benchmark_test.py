@@ -1,6 +1,7 @@
 from time import time
 from graphs import generate_random_graph
 from mpp import dijkstra, pivot_sssp_graph
+from random import Random
 import csv
 
 # Tamanhos dos grafos
@@ -21,6 +22,9 @@ tipo_grafo = {
 # Peso máximo das arestas
 max_weight = 20
 
+# Seed para reprodutibilidade dos testes
+rng = Random(42)
+
 with open('benchmark_results.csv', mode='w', newline='') as file:
 
     # Cria o objeto writer
@@ -37,7 +41,7 @@ with open('benchmark_results.csv', mode='w', newline='') as file:
             for tipo, fator in tipo_grafo.items():
                 
                 # Gera o grafo aleatório
-                grafo = generate_random_graph(tamanho, tamanho * fator, True, 20)
+                grafo = generate_random_graph(rng, tamanho, tamanho * fator, True, 20)
 
                 for modelo, func in modelos.items():
 
