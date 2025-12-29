@@ -1,6 +1,8 @@
+import heapq
+
 from graphs import Graph
 from math import inf
-import heapq
+from concurrent.futures import ThreadPoolExecutor
 
 def dijkstra(graph: Graph, origin):
     """
@@ -43,32 +45,27 @@ def dijkstra(graph: Graph, origin):
 
     return distances
 
-def pivot_sssp_graph(G, source, width=10, num_pivots=5, limit=50):
+def pivot_sssp_graph_seq(G, source, width=10, num_pivots=5, limit=50):
+
     """
     Pivot-SSSP implementation
 
     See more in: https://arxiv.org/pdf/2504.17033
     """
 
-    # --- 1) Mapping vertexes to indexes ---
     vertices = list(G.vertexes.keys())
     idx_of = {v: i for i, v in enumerate(vertices)}
     id_of = {i: v for v, i in idx_of.items()}
-
     n = len(vertices)
 
-    # --- 2) Adapting the adjacency list of Graph obj---
-    # graph[u] = [(v, w), ...]
     graph = [[] for _ in range(n)]
     for u in vertices:
         u_idx = idx_of[u]
-        for edge, info in G.vertexes[u].items():
+        for info in G.vertexes[u].values():
             v = info["dest"]
             w = info["weight"]
-            v_idx = idx_of[v]
-            graph[u_idx].append((v_idx, w))
+            graph[u_idx].append((idx_of[v], w))
 
-    # --- 3) Adapting the original algorithm ---
     INF = float("inf")
     dist = [INF] * n
     dist[idx_of[source]] = 0
@@ -86,28 +83,82 @@ def pivot_sssp_graph(G, source, width=10, num_pivots=5, limit=50):
 
         pivots = sorted(S, key=lambda x: dist[x])[:num_pivots]
 
+        # Execução SEQUENCIAL
         for p in pivots:
-            pq = [(dist[p], p)]
-            expanded = 0
-            visited = set()
-
-            while pq and expanded < limit:
-                d, u = heapq.heappop(pq)
-                if u in visited:
-                    continue
-                visited.add(u)
-                expanded += 1
-
-                for v, w in graph[u]:
-                    nd = d + w
-                    if lo <= nd < hi and nd < dist[v]:
-                        dist[v] = nd
-                        heapq.heappush(pq, (nd, v))
+            expand_pivot(p, graph, dist, lo, hi, limit)
 
         for u in S:
             finished.add(u)
 
         max_dist += width
 
-    # --- 4) Converting to dictionary ---
-    return { id_of[i]: dist[i] for i in range(n) }
+    return {id_of[i]: dist[i] for i in range(n)}
+
+def pivot_sssp_graph_shared(G, source, width=10, num_pivots=5, limit=50):
+    vertices = list(G.vertexes.keys())
+    idx_of = {v: i for i, v in enumerate(vertices)}
+    id_of = {i: v for v, i in idx_of.items()}
+    n = len(vertices)
+
+    graph = [[] for _ in range(n)]
+    for u in vertices:
+        u_idx = idx_of[u]
+        for info in G.vertexes[u].values():
+            v = info["dest"]
+            w = info["weight"]
+            graph[u_idx].append((idx_of[v], w))
+
+    INF = float("inf")
+    dist = [INF] * n
+    dist[idx_of[source]] = 0
+
+    max_dist = 0
+    finished = set()
+
+    while True:
+        lo = max_dist
+        hi = max_dist + width
+
+        S = [u for u in range(n) if lo <= dist[u] < hi and u not in finished]
+        if not S:
+            break
+
+        pivots = sorted(S, key=lambda x: dist[x])[:num_pivots]
+
+        # Execução PARALELA (memória compartilhada)
+        with ThreadPoolExecutor(max_workers=len(pivots)) as executor:
+            executor.map(
+                lambda p: expand_pivot(p, graph, dist, lo, hi, limit),
+                pivots
+            )
+
+        for u in S:
+            finished.add(u)
+
+        max_dist += width
+
+    return {id_of[i]: dist[i] for i in range(n)}
+
+def expand_pivot(p, graph, dist, lo, hi, limit):
+
+    """
+    Common function for expanding the pivot, executing a 'mini-dijkstra'
+    """
+
+    pq = [(dist[p], p)]
+    expanded = 0
+    visited = set()
+
+    while pq and expanded < limit:
+        d, u = heapq.heappop(pq)
+
+        if u in visited:
+            continue
+        visited.add(u)
+        expanded += 1
+
+        for v, w in graph[u]:
+            nd = d + w
+            if lo <= nd < hi and nd < dist[v]:
+                dist[v] = nd
+                heapq.heappush(pq, (nd, v))

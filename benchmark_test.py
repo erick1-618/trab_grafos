@@ -1,8 +1,9 @@
+import csv
+
 from time import time
 from graphs import generate_random_graph
-from mpp import dijkstra, pivot_sssp_graph
+from mpp import dijkstra, pivot_sssp_graph_seq, pivot_sssp_graph_shared
 from random import Random
-import csv
 
 # Tamanhos dos grafos
 tamanhos = (10, 100, 500)
@@ -10,7 +11,8 @@ tamanhos = (10, 100, 500)
 # Modelos de MPP
 modelos = {
     'dijkstra': dijkstra,
-    'pivot_sssp': pivot_sssp_graph
+    'pivot_sssp': pivot_sssp_graph_seq,
+    'pivot_parallel': pivot_sssp_graph_shared
 }
 
 # Fator do tipo de grafo
