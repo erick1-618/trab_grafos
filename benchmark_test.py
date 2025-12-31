@@ -18,7 +18,7 @@ modelos = {
 # Fator do tipo de grafo
 tipo_grafo = {
     'esparso': 1,
-    'denso': 0
+    'denso': 2
 }
 
 # Peso máximo das arestas
@@ -43,7 +43,7 @@ with open('benchmark_results.csv', mode='w', newline='') as file:
             for tipo, fator in tipo_grafo.items():
                 
                 # Gera o grafo aleatório
-                grafo = generate_random_graph(rng, tamanho, tamanho * fator, True, 20)
+                grafo = generate_random_graph(rng, tamanho, tamanho ** fator, True, 20)
 
                 for modelo, func in modelos.items():
 
