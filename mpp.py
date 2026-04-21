@@ -94,6 +94,7 @@ def pivot_sssp_graph_seq(G, source, width=10, num_pivots=5, limit=50):
 
     return {id_of[i]: dist[i] for i in range(n)}
 
+# DEPRECATED - DOESN'T FOLLOW DE ORIGINAL ARTICLE PRINCIPLES
 def pivot_sssp_graph_shared(G, source, width=10, num_pivots=5, limit=50):
     vertices = list(G.vertexes.keys())
     idx_of = {v: i for i, v in enumerate(vertices)}
@@ -139,6 +140,7 @@ def pivot_sssp_graph_shared(G, source, width=10, num_pivots=5, limit=50):
 
     return {id_of[i]: dist[i] for i in range(n)}
 
+# DEPRECATED: DOENSN'T USE THE ARTICLE PRINCIPLES
 def expand_pivot(p, graph, dist, lo, hi, limit):
 
     """
